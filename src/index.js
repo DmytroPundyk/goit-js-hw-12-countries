@@ -1,6 +1,8 @@
+import fetchCountries from './fetchCountries.js';
 import countryMarkup from './tamplates/country.hbs';
 import countriesMarkup from './tamplates/countries.hbs';
-import { alert } from '@pnotify/core';
+import { info, error } from '@pnotify/core';
+import '@pnotify/core/dist/BrightTheme.css';
 import { debounce } from 'lodash';
 
 const inputRef = document.querySelector('.js_input');
@@ -11,16 +13,17 @@ inputRef.addEventListener('input', debounce(onInput, 500));
 
 function onInput(e) {
   const userCountry = e.target.value;
-  console.log(userCountry);
   if (userCountry) {
     listRef.innerHTML = '';
-    markup.innerHTML = '';
-    
+    markup.innerHTML = '';  
   }
-  fetch(`https://restcountries.com/v2/name/${userCountry}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log(data);
+   fetchCountries(userCountry)
+   .then(renderMarkup)
+    .catch(onFetchError);
+};
+
+
+function renderMarkup(data) {
       if (data.length === 1) {
         return (markup.innerHTML = countryMarkup(data[0]));
       }
@@ -29,12 +32,24 @@ function onInput(e) {
         return (listRef.innerHTML = countriesMarkup(data));
       }
       if (data.length > 10) {
-        return alert({
-          text: 'To many matches found. Please enter more specific query!',
-        });
+         onFetchError(error,
+            'To many matches found. Please enter more specific query!');
+         return;
       }
-    })
-    .catch(err => {
-      console.log(err);
-    });
+      else {
+         onFetchError(info,
+            'No matches found!');
+       }
+      }
+    
+function onFetchError(typeInfo ,text) {
+   listRef.innerHTML = ''
+  typeInfo({
+     text: `${text}`,
+     delay: 1000,
+     closerHover: true,
+    animation: 'fade',
+     animateSpeed: 'normal',
+    color: 'red',
+  });
 }
