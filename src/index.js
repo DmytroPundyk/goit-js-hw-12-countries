@@ -24,7 +24,7 @@ function onInput(e) {
 
 
 function renderMarkup(data) {
-      if (data.length === 1) {
+   if (data.length === 1) {
         return (markup.innerHTML = countryMarkup(data[0]));
       }
 
